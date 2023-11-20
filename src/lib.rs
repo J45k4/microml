@@ -1,4 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::cell::RefCell;
+use std::rc::Rc;
+
+mod nn;
 
 #[derive(Debug)]
 enum Op {
@@ -50,32 +53,26 @@ impl Inner {
                         left.grad += self.grad;
                         right.grad += self.grad;
                     },
-                    Op::Pow => {
-                        left.grad += right.data * left.data.powf(right.data - 1.0);
-                        right.grad += left.data.powf(right.data) * (right.data * left.data.ln());
-                    },
-                    Op::Relu => {
-                        left.grad += if left.data > 0.0 { 1.0 } else { 0.0 };
-                        right.grad += if right.data > 0.0 { 1.0 } else { 0.0 };
-                    },
+                    _ => panic!("Not a bin OP")
                 }
             },
             Parent::UnaryOp { op, inner } => {
                 let mut inner = inner.borrow_mut();
 
                 match op {
-                    Op::Mul => {
-                        inner.grad += inner.data;
-                    },
-                    Op::Add => {
-                        inner.grad += 1.0;
-                    },
                     Op::Pow => {
-                        inner.grad += inner.data.powf(inner.data - 1.0);
+                        let inner_grad = self.grad * self.data.powf(self.data - 1.0);
+                        inner.backward_with_grad(inner_grad);
                     },
                     Op::Relu => {
-                        inner.grad += if inner.data > 0.0 { 1.0 } else { 0.0 };
+                        let inner_grad = if self.data > 0.0 {
+                            self.grad
+                        } else {
+                            0.0
+                        };
+                        inner.backward_with_grad(inner_grad);
                     },
+                    _ => panic!("Not a unary OP")
                 }
             },
         }
@@ -98,6 +95,10 @@ impl Value {
         }
     }
 
+    pub fn data(&self) -> f64 {
+        self.inner.borrow().data
+    }
+
     pub fn mul(&self, other: &Value) -> Value {
         let new_data = self.inner.borrow().data * other.inner.borrow().data;
 
@@ -114,47 +115,55 @@ impl Value {
         }
     }
 
-    // pub fn add(&self, other: &Value) -> Value {
-    //     let new_data = self.data + other.data;
+    pub fn add(&self, other: &Value) -> Value {
+        let new_data = self.inner.borrow().data + other.inner.borrow().data;
 
-    //     Value { 
-    //         parent: Parent::BinOp {
-    //             left: self,
-    //             right: other,
-    //         },
-    //         grad: 0.0,
-    //         data: new_data,
-    //     }
-    // }
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::BinOp {
+                    op: Op::Add,
+                    left: self.inner.clone(),
+                    right: other.inner.clone(),
+                }
+            })),
+        }
+    }
 
-    // pub fn pow (&self, other: &Value) -> Value {
-    //     let new_data = self.data.powf(other.data);
+    pub fn pow(&self, other: f64) -> Value {
+        let new_data = self.inner.borrow().data.powf(other);
 
-    //     Value { 
-    //         data: new_data,
-    //         parent: Parent::BinOp {
-    //             left: self,
-    //             right: other,
-    //         },
-    //         grad: 0.0
-    //     }
-    // }
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::UnaryOp {
+                    op: Op::Pow,
+                    inner: self.inner.clone(),
+                }
+            })),
+        }
+    }
 
-    // pub fn relu(&self) -> Value {
-    //     let new_data = if self.data > 0.0 {
-    //         self.data
-    //     } else {
-    //         0.0
-    //     };
+    pub fn relu(&self) -> Value {
+        let new_data = if self.inner.borrow().data > 0.0 {
+            self.inner.borrow().data
+        } else {
+            0.0
+        };
 
-    //     Value { 
-    //         data: new_data,
-    //         parent: Parent::None,
-    //         grad: 0.0
-    //     }
-    // }
-
-    
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::UnaryOp {
+                    op: Op::Relu,
+                    inner: self.inner.clone(),
+                }
+            })),
+        }
+    }
 
     pub fn backward(&self) {
         self.inner.borrow_mut().backward_with_grad(1.0);
@@ -172,7 +181,7 @@ mod tests {
         let c = a.mul(&b);
         c.backward();
 
-        println!("{:?}", c);
+        println!("{:#?}", c);
 
         // assert_eq!(c.data, 4.0);
     }
