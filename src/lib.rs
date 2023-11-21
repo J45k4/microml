@@ -1,7 +1,9 @@
 use std::cell::RefCell;
+use std::iter::Sum;
 use std::rc::Rc;
 
 mod nn;
+mod loss;
 
 #[derive(Debug)]
 enum Op {
@@ -167,6 +169,15 @@ impl Value {
 
     pub fn backward(&self) {
         self.inner.borrow_mut().backward_with_grad(1.0);
+    }
+}
+
+impl Sum for Value {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        iter.fold(Value::new(0.0), |acc, x| acc.add(&x))
     }
 }
 

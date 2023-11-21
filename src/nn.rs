@@ -1,3 +1,5 @@
+use std::iter::zip;
+
 use crate::Value;
 
 pub struct Neuron {
@@ -21,31 +23,47 @@ impl Neuron {
         }
     }
 
-    pub fn forward(&mut self, input: Vec<f64>) -> f64 {
-        // let mut sum = Value::new(0.0);
-        // for (i, value) in input.iter().enumerate() {
-        //     sum += self.weights[i].mul(value);
-        // }
-        // sum += self.bias.data();
-        // sum
-        0.0
+    pub fn forward(&self, input: &[Value]) -> Value {
+        zip(self.weights.iter(), input.iter())
+            .map(|(w, i)| w.mul(i))
+            .sum::<Value>()
+            .add(&self.bias)
+            .relu()
+    }
+}
+
+pub struct Layer {
+    neurons: Vec<Neuron>,
+}
+
+impl Layer {
+    pub fn new(input_size: usize, output_size: usize, nonlin: bool) -> Layer {
+        let mut neurons = Vec::with_capacity(output_size);
+        for _ in 0..output_size {
+            neurons.push(Neuron::new(input_size, nonlin));
+        }
+
+        Layer {
+            neurons,
+        }
+    }
+
+    pub fn forward(&mut self, input: Vec<Value>) -> Vec<Value> {
+        self.neurons.iter()
+            .map(|n| n.forward(&input))
+            .collect()
     }
 }
 
 pub struct MLP {
-    layers: Vec<Vec<Value>> 
+    layers: Vec<Layer>,
 }
 
 impl MLP {
     pub fn new(layer_dims: &[usize]) -> MLP {
-        let mut layers = Vec::with_capacity(layer_dims.len());
-
-        for dim in layer_dims {
-            let mut layer = Vec::with_capacity(*dim);
-            for _ in 0..*dim {
-                layer.push(Value::new(0.0));
-            }
-            layers.push(layer);
+        let mut layers = Vec::with_capacity(layer_dims.len() - 1);
+        for i in 0..layer_dims.len() - 1 {
+            layers.push(Layer::new(layer_dims[i], layer_dims[i+1], i != layer_dims.len() - 2));
         }
 
         MLP {
@@ -53,25 +71,13 @@ impl MLP {
         }
     }
 
-    pub fn forward(&mut self, input: Vec<f64>) -> Vec<f64> {
-        // for (i, value) in input.iter().enumerate() {
-        //     self.layers[0][i].set_data(*value);
-        // }
+    pub fn forward(&mut self, input: Vec<Value>) -> Vec<Value> {
+        let mut new_x = input;
 
-        // for i in 1..self.layers.len() {
-        //     for j in 0..self.layers[i].len() {
-        //         let mut sum = 0.0;
-        //         for k in 0..self.layers[i-1].len() {
-        //             sum += self.layers[i-1][k].get_data() * 0.5;
-        //         }
-        //         self.layers[i][j].set_data(sum);
-        //     }
-        // }
+        for layer in self.layers.iter_mut() {
+            new_x = layer.forward(new_x);
+        }
 
-        let mut output = Vec::new();
-        // for value in self.layers[self.layers.len()-1].iter() {
-        //     output.push(value.get_data());
-        // }
-        output
+        new_x
     }
 }
