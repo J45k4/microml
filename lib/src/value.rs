@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 use std::iter::Sum;
+use std::ops::Div;
+use std::ops::Sub;
 use std::rc::Rc;
-
-mod nn;
-mod loss;
 
 #[derive(Debug)]
 enum Op {
@@ -11,6 +10,9 @@ enum Op {
     Add,
     Pow,
     Relu,
+    Log,
+    Exp,
+    Max
 }
 
 #[derive(Debug)]
@@ -167,8 +169,94 @@ impl Value {
         }
     }
 
+    pub fn log(&self) -> Value {
+        let new_data = self.inner.borrow().data.log2();
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::UnaryOp {
+                    op: Op::Log,
+                    inner: self.inner.clone(),
+                }
+            })),
+        }
+    }
+
+    pub fn exp(&self) -> Value {
+        let new_data = self.inner.borrow().data.exp();
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::UnaryOp {
+                    op: Op::Log,
+                    inner: self.inner.clone(),
+                }
+            })),
+        }
+    }
+
+    pub fn max(&self, other: &Value) -> Value {
+        let new_data = self.inner.borrow().data.max(other.inner.borrow().data);
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::BinOp {
+                    op: Op::Max,
+                    left: self.inner.clone(),
+                    right: other.inner.clone(),
+                }
+            })),
+        }
+    }
+
     pub fn backward(&self) {
         self.inner.borrow_mut().backward_with_grad(1.0);
+    }
+}
+
+impl Sub for Value {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        self.add(&other.mul(&Value::new(-1.0)))
+    }
+}
+
+impl Sub for &Value {
+    type Output = Value;
+
+    fn sub(self, other: Self) -> Value {
+        self.add(&other.mul(&Value::new(-1.0)))
+    }
+}
+
+impl Div for Value {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        self.mul(&other.pow(-1.0))
+    }
+}
+
+impl Div for &Value {
+    type Output = Value;
+
+    fn div(self, other: Self) -> Value {
+        self.mul(&other.pow(-1.0))
+    }
+}
+
+impl Div<&Value> for Value {
+    type Output = Value;
+
+    fn div(self, other: &Self) -> Self::Output {
+        self.mul(&other.pow(-1.0))
     }
 }
 
@@ -178,6 +266,24 @@ impl Sum for Value {
         I: Iterator<Item = Self>,
     {
         iter.fold(Value::new(0.0), |acc, x| acc.add(&x))
+    }
+}
+
+// impl Sum for &Value {
+//     fn sum<I>(iter: I) -> Self
+//     where
+//         I: Iterator<Item = Self>,
+//     {
+//         iter.fold(&Value::new(0.0), |acc, x| &acc.add(&x))
+//     }
+// }
+
+impl<'a> Sum<&'a Value> for Value {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = &'a Self>,
+    {
+        iter.fold(Value::new(0.0), |acc, x| acc.add(x))
     }
 }
 

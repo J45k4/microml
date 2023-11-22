@@ -1,6 +1,7 @@
 use std::iter::zip;
 
 use crate::Value;
+use crate::create_random_floats;
 
 pub struct Neuron {
     weights: Vec<Value>,
@@ -10,10 +11,7 @@ pub struct Neuron {
 
 impl Neuron {
     pub fn new(input_size: usize, nonlin: bool) -> Neuron {
-        let mut weights = Vec::with_capacity(input_size);
-        for _ in 0..input_size {
-            weights.push(Value::new(0.0));
-        }
+        let weights = create_random_floats(input_size).iter().map(|x| Value::new(*x)).collect::<Vec<Value>>();
         let bias = Value::new(0.0);
 
         Neuron {
@@ -21,6 +19,14 @@ impl Neuron {
             bias,
             nonlin,
         }
+    }
+
+    pub fn weights(&self) -> &Vec<Value> {
+        &self.weights
+    }
+
+    pub fn bias(&self) -> &Value {
+        &self.bias
     }
 
     pub fn forward(&self, input: &[Value]) -> Value {
@@ -48,7 +54,11 @@ impl Layer {
         }
     }
 
-    pub fn forward(&mut self, input: Vec<Value>) -> Vec<Value> {
+    pub fn neurons(&self) -> &Vec<Neuron> {
+        &self.neurons
+    }
+
+    pub fn forward(&self, input: Vec<Value>) -> Vec<Value> {
         self.neurons.iter()
             .map(|n| n.forward(&input))
             .collect()
@@ -71,10 +81,14 @@ impl MLP {
         }
     }
 
-    pub fn forward(&mut self, input: Vec<Value>) -> Vec<Value> {
+    pub fn layers(&self) -> &Vec<Layer> {
+        &self.layers
+    }
+
+    pub fn forward(&self, input: Vec<Value>) -> Vec<Value> {
         let mut new_x = input;
 
-        for layer in self.layers.iter_mut() {
+        for layer in self.layers.iter() {
             new_x = layer.forward(new_x);
         }
 
