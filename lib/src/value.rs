@@ -12,7 +12,8 @@ enum Op {
     Relu,
     Log,
     Exp,
-    Max
+    Max,
+    Min
 }
 
 #[derive(Debug)]
@@ -201,6 +202,22 @@ impl Value {
 
     pub fn max(&self, other: &Value) -> Value {
         let new_data = self.inner.borrow().data.max(other.inner.borrow().data);
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::BinOp {
+                    op: Op::Max,
+                    left: self.inner.clone(),
+                    right: other.inner.clone(),
+                }
+            })),
+        }
+    }
+
+    pub fn min(&self, other: &Value) -> Value {
+        let new_data = self.inner.borrow().data.min(other.inner.borrow().data);
 
         Value { 
             inner: Rc::new(RefCell::new(Inner {
