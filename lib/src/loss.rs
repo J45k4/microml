@@ -2,7 +2,6 @@ use std::iter::zip;
 
 use crate::Value;
 
-
 pub fn cross_entropy_loss(y: &[Value], y_hat: &[Value]) -> Value {
     zip(y.iter(), y_hat.iter())
         .map(|(y, y_hat)| {

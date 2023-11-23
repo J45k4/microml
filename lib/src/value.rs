@@ -5,27 +5,30 @@ use std::ops::Sub;
 use std::rc::Rc;
 
 #[derive(Debug)]
-enum Op {
+enum BinOPType {
     Mul,
+    Div,
     Add,
-    Pow,
-    Relu,
-    Log,
-    Exp,
     Max,
     Min
+}
+
+#[derive(Debug)]
+enum UnaryOPType {
+    Log,
+    Exp
 }
 
 #[derive(Debug)]
 enum Parent {
     None,
     BinOp {
-        op: Op,
+        op: BinOPType,
         left: Rc<RefCell<Inner>>,
         right: Rc<RefCell<Inner>>,
     },
     UnaryOp {
-        op: Op,
+        op: UnaryOPType,
         inner: Rc<RefCell<Inner>>,
     },
 }
@@ -48,36 +51,58 @@ impl Inner {
                 let mut right = right.borrow_mut();
 
                 match op {
-                    Op::Mul => {
+                    BinOPType::Mul => {
                         let left_grad = right.data * self.grad;
                         let right_grad = left.data * self.grad;
                         left.backward_with_grad(left_grad);
                         right.backward_with_grad(right_grad);
                     },
-                    Op::Add => {
+                    BinOPType::Add => {
                         left.grad += self.grad;
                         right.grad += self.grad;
                     },
-                    _ => panic!("Not a bin OP")
+                    BinOPType::Max => {
+                        let left_grad = if left.data > right.data {
+                            self.grad
+                        } else {
+                            0.0
+                        };
+                        let right_grad = if right.data > left.data {
+                            self.grad
+                        } else {
+                            0.0
+                        };
+                        left.backward_with_grad(left_grad);
+                        right.backward_with_grad(right_grad);
+                    },
+                    BinOPType::Min => {
+                        let left_grad = if left.data < right.data {
+                            self.grad
+                        } else {
+                            0.0
+                        };
+                        let right_grad = if right.data < left.data {
+                            self.grad
+                        } else {
+                            0.0
+                        };
+                        left.backward_with_grad(left_grad);
+                        right.backward_with_grad(right_grad);
+                    },
+                    BinOPType::Div => {
+                        let left_grad = self.grad / right.data;
+                        let right_grad = -(left.data / right.data.powi(2)) * self.grad;
+                        left.backward_with_grad(left_grad);
+                        right.backward_with_grad(right_grad);
+                    },
                 }
             },
             Parent::UnaryOp { op, inner } => {
                 let mut inner = inner.borrow_mut();
 
                 match op {
-                    Op::Pow => {
-                        let inner_grad = self.grad * self.data.powf(self.data - 1.0);
-                        inner.backward_with_grad(inner_grad);
-                    },
-                    Op::Relu => {
-                        let inner_grad = if self.data > 0.0 {
-                            self.grad
-                        } else {
-                            0.0
-                        };
-                        inner.backward_with_grad(inner_grad);
-                    },
-                    _ => panic!("Not a unary OP")
+                    UnaryOPType::Log => todo!(),
+                    UnaryOPType::Exp => todo!(),
                 }
             },
         }
@@ -112,7 +137,23 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::BinOp {
-                    op: Op::Mul,
+                    op: BinOPType::Mul,
+                    left: self.inner.clone(),
+                    right: other.inner.clone(),
+                }
+            })), 
+        }
+    }
+
+    pub fn div(&self, other: &Value) -> Value {
+        let new_data = self.inner.borrow().data / other.inner.borrow().data;
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner {
+                data: new_data,
+                grad: 0.0,
+                parent: Parent::BinOp {
+                    op: BinOPType::Div,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
@@ -128,7 +169,7 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::BinOp {
-                    op: Op::Add,
+                    op: BinOPType::Add,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
@@ -136,38 +177,12 @@ impl Value {
         }
     }
 
-    pub fn pow(&self, other: f64) -> Value {
-        let new_data = self.inner.borrow().data.powf(other);
-
-        Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::UnaryOp {
-                    op: Op::Pow,
-                    inner: self.inner.clone(),
-                }
-            })),
-        }
-    }
+    // pub fn pow(&self, other: f64) -> Value {
+        
+    // }
 
     pub fn relu(&self) -> Value {
-        let new_data = if self.inner.borrow().data > 0.0 {
-            self.inner.borrow().data
-        } else {
-            0.0
-        };
-
-        Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::UnaryOp {
-                    op: Op::Relu,
-                    inner: self.inner.clone(),
-                }
-            })),
-        }
+        self.max(&Value::new(0.0))
     }
 
     pub fn log(&self) -> Value {
@@ -178,7 +193,7 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::UnaryOp {
-                    op: Op::Log,
+                    op: UnaryOPType::Log,
                     inner: self.inner.clone(),
                 }
             })),
@@ -193,7 +208,7 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::UnaryOp {
-                    op: Op::Log,
+                    op: UnaryOPType::Exp,
                     inner: self.inner.clone(),
                 }
             })),
@@ -208,7 +223,7 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::BinOp {
-                    op: Op::Max,
+                    op: BinOPType::Max,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
@@ -224,7 +239,7 @@ impl Value {
                 data: new_data,
                 grad: 0.0,
                 parent: Parent::BinOp {
-                    op: Op::Max,
+                    op: BinOPType::Max,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
@@ -257,7 +272,7 @@ impl Div for Value {
     type Output = Self;
 
     fn div(self, other: Self) -> Self {
-        self.mul(&other.pow(-1.0))
+        self.div(&other)
     }
 }
 
@@ -265,7 +280,7 @@ impl Div for &Value {
     type Output = Value;
 
     fn div(self, other: Self) -> Value {
-        self.mul(&other.pow(-1.0))
+        self.div(&other)
     }
 }
 
@@ -273,7 +288,7 @@ impl Div<&Value> for Value {
     type Output = Value;
 
     fn div(self, other: &Self) -> Self::Output {
-        self.mul(&other.pow(-1.0))
+        self.div(other)
     }
 }
 
@@ -285,15 +300,6 @@ impl Sum for Value {
         iter.fold(Value::new(0.0), |acc, x| acc.add(&x))
     }
 }
-
-// impl Sum for &Value {
-//     fn sum<I>(iter: I) -> Self
-//     where
-//         I: Iterator<Item = Self>,
-//     {
-//         iter.fold(&Value::new(0.0), |acc, x| &acc.add(&x))
-//     }
-// }
 
 impl<'a> Sum<&'a Value> for Value {
     fn sum<I>(iter: I) -> Self

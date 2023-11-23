@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 microml = { path = "../lib" }
+tokio = { version = "1", features = ["full"] }

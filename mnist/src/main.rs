@@ -4,7 +4,8 @@ use microml::create_random_floats;
 use microml::cross_entropy_loss;
 use microml::softmax;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let mlp = MLP::new(&[2, 2]);
 
     let input = create_random_floats(2);
@@ -23,6 +24,7 @@ fn main() {
     let out =  softmax(&out);
     //let out = out.iter().map(|x| x.data()).collect::<Vec<f64>>();
     let loss = cross_entropy_loss(&out, &[Value::new(0.0), Value::new(1.0)]);
+    loss.backward();
     println!("loss: {:?}", loss.data());
 
     // println!("output: {:?}", out);
