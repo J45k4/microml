@@ -1,14 +1,21 @@
 use std::cell::RefCell;
+use std::collections::HashSet;
+use std::hash::Hasher;
 use std::iter::Sum;
 use std::ops::Div;
 use std::ops::Sub;
+use std::hash::Hash;
 use std::rc::Rc;
+use std::sync::atomic::AtomicUsize;
+
+static ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 #[derive(Debug)]
 enum BinOPType {
     Mul,
     Div,
     Add,
+    Sub,
     Max,
     Min
 }
@@ -35,12 +42,22 @@ enum Parent {
 
 #[derive(Debug)]
 struct Inner {
+    id: usize,
     data: f64,
     grad: f64,
     parent: Parent,
 }
 
 impl Inner {
+    fn new(data: f64, parent: Parent) -> Inner {
+        Inner {
+            id: ID_COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
+            data,
+            grad: 0.0,
+            parent: parent,
+        }
+    }
+
     fn backward(&self) {
         match &self.parent {
             Parent::None => {
@@ -60,6 +77,11 @@ impl Inner {
                         log::debug!("add");
                         left.grad += self.grad;
                         right.grad += self.grad;
+                    },
+                    BinOPType::Sub => {
+                        log::debug!("sub");
+                        left.grad += self.grad;
+                        right.grad += -self.grad;
                     },
                     BinOPType::Max => {
                         log::debug!("max");
@@ -119,11 +141,7 @@ pub struct Value {
 impl Value {
     pub fn new(data: f64) -> Value {
         Value {
-            inner: Rc::new(RefCell::new(Inner {
-                data,
-                grad: 0.0,
-                parent: Parent::None,
-            })),         
+            inner: Rc::new(RefCell::new(Inner::new(data, Parent::None))),        
         }
     }
 
@@ -144,15 +162,14 @@ impl Value {
         let new_data = self.inner.borrow().data * other.inner.borrow().data;
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::BinOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
                     op: BinOPType::Mul,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
-            })), 
+            ))), 
         }
     }
 
@@ -160,15 +177,14 @@ impl Value {
         let new_data = self.inner.borrow().data / other.inner.borrow().data;
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::BinOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
                     op: BinOPType::Div,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
-            })), 
+            ))), 
         }
     }
 
@@ -176,15 +192,29 @@ impl Value {
         let new_data = self.inner.borrow().data + other.inner.borrow().data;
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::BinOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
                     op: BinOPType::Add,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
-            })),
+            ))), 
+        }
+    }
+
+    pub fn sub(&self, other: &Value) -> Value {
+        let new_data = self.inner.borrow().data - other.inner.borrow().data;
+
+        Value { 
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
+                    op: BinOPType::Sub,
+                    left: self.inner.clone(),
+                    right: other.inner.clone(),
+                }
+            ))), 
         }
     }
 
@@ -200,14 +230,13 @@ impl Value {
         let new_data = self.inner.borrow().data.log2();
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::UnaryOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::UnaryOp {
                     op: UnaryOPType::Log,
                     inner: self.inner.clone(),
                 }
-            })),
+            ))), 
         }
     }
 
@@ -215,14 +244,13 @@ impl Value {
         let new_data = self.inner.borrow().data.exp();
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::UnaryOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::UnaryOp {
                     op: UnaryOPType::Exp,
                     inner: self.inner.clone(),
                 }
-            })),
+            ))), 
         }
     }
 
@@ -230,15 +258,14 @@ impl Value {
         let new_data = self.inner.borrow().data.max(other.inner.borrow().data);
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::BinOp {
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
                     op: BinOPType::Max,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
-            })),
+            ))), 
         }
     }
 
@@ -246,15 +273,14 @@ impl Value {
         let new_data = self.inner.borrow().data.min(other.inner.borrow().data);
 
         Value { 
-            inner: Rc::new(RefCell::new(Inner {
-                data: new_data,
-                grad: 0.0,
-                parent: Parent::BinOp {
-                    op: BinOPType::Max,
+            inner: Rc::new(RefCell::new(Inner::new(
+                new_data, 
+                Parent::BinOp {
+                    op: BinOPType::Min,
                     left: self.inner.clone(),
                     right: other.inner.clone(),
                 }
-            })),
+            ))), 
         }
     }
 
@@ -266,13 +292,21 @@ impl Value {
         self.inner.borrow_mut().grad = 1.0;
         let mut toppo = vec![];
         let mut stack = vec![self.inner.clone()];
+        let mut visited = HashSet::new();
         loop {
             let inner = match stack.pop() {
                 Some(inner) => inner,
                 None => break,
             };
             {
-                let inner = inner.borrow();
+                let inner: std::cell::Ref<'_, Inner> = inner.borrow();
+
+                if visited.contains(&inner.id) {
+                    continue;
+                }
+
+                visited.insert(inner.id);
+
                 match &inner.parent {
                     Parent::None => {},
                     Parent::BinOp { left, right, .. } => {
@@ -283,7 +317,8 @@ impl Value {
                         stack.push(inner.clone());
                     }
                 }
-            }
+            } 
+
             toppo.push(inner.clone());
         }
 
@@ -292,46 +327,6 @@ impl Value {
         for inner in toppo {
             inner.borrow().backward();
         }
-    }
-}
-
-impl Sub for Value {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self {
-        self.add(&other.mul(&Value::new(-1.0)))
-    }
-}
-
-impl Sub for &Value {
-    type Output = Value;
-
-    fn sub(self, other: Self) -> Value {
-        self.add(&other.mul(&Value::new(-1.0)))
-    }
-}
-
-impl Div for Value {
-    type Output = Self;
-
-    fn div(self, other: Self) -> Self {
-        self.div(&other)
-    }
-}
-
-impl Div for &Value {
-    type Output = Value;
-
-    fn div(self, other: Self) -> Value {
-        self.div(&other)
-    }
-}
-
-impl Div<&Value> for Value {
-    type Output = Value;
-
-    fn div(self, other: &Self) -> Self::Output {
-        self.div(other)
     }
 }
 
