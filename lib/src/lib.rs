@@ -26,3 +26,9 @@ pub fn softmax(values: &[Value]) -> Vec<Value> {
     let sum = exps.iter().sum::<Value>();
     exps.iter().map(|v| v / &sum).collect::<Vec<Value>>()
 }
+
+pub fn one_hot_encode(label: usize, size: usize) -> Vec<Value> {
+    let mut vec = vec![Value::new(0.0); size];
+    vec[label] = Value::new(1.0);
+    vec
+}

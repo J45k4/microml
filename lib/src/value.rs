@@ -41,75 +41,77 @@ struct Inner {
 }
 
 impl Inner {
-    fn backward_with_grad(&mut self, grad: f64) {
-        self.grad = grad;
-        
+    fn backward(&self) {
         match &self.parent {
-            Parent::None => {},
+            Parent::None => {
+                log::debug!("no parent")
+            },
             Parent::BinOp { op, left, right } => {
                 let mut left = left.borrow_mut();
                 let mut right = right.borrow_mut();
 
                 match op {
                     BinOPType::Mul => {
-                        let left_grad = right.data * self.grad;
-                        let right_grad = left.data * self.grad;
-                        left.backward_with_grad(left_grad);
-                        right.backward_with_grad(right_grad);
+                        log::debug!("mul");
+                        left.grad += right.data * self.grad;
+                        right.grad += left.data * self.grad;
                     },
                     BinOPType::Add => {
+                        log::debug!("add");
                         left.grad += self.grad;
                         right.grad += self.grad;
                     },
                     BinOPType::Max => {
-                        let left_grad = if left.data > right.data {
+                        log::debug!("max");
+                        left.grad += if left.data > right.data {
                             self.grad
                         } else {
                             0.0
                         };
-                        let right_grad = if right.data > left.data {
+                        right.grad += if right.data > left.data {
                             self.grad
                         } else {
                             0.0
                         };
-                        left.backward_with_grad(left_grad);
-                        right.backward_with_grad(right_grad);
                     },
                     BinOPType::Min => {
-                        let left_grad = if left.data < right.data {
+                        log::debug!("min");
+                        left.grad += if left.data < right.data {
                             self.grad
                         } else {
                             0.0
                         };
-                        let right_grad = if right.data < left.data {
+                        right.grad += if right.data < left.data {
                             self.grad
                         } else {
                             0.0
                         };
-                        left.backward_with_grad(left_grad);
-                        right.backward_with_grad(right_grad);
                     },
                     BinOPType::Div => {
-                        let left_grad = self.grad / right.data;
-                        let right_grad = -(left.data / right.data.powi(2)) * self.grad;
-                        left.backward_with_grad(left_grad);
-                        right.backward_with_grad(right_grad);
+                        log::debug!("div");
+                        left.grad += self.grad / right.data;
+                        right.grad += -(left.data / right.data.powi(2)) * self.grad;
                     },
                 }
             },
             Parent::UnaryOp { op, inner } => {
+                log::debug!("unaryop");
                 let mut inner = inner.borrow_mut();
 
                 match op {
-                    UnaryOPType::Log => todo!(),
-                    UnaryOPType::Exp => todo!(),
+                    UnaryOPType::Log => {
+                        inner.grad += self.grad / inner.data;
+                    },
+                    UnaryOPType::Exp => {
+                        inner.grad += self.grad * self.data.exp();
+                    }
                 }
             },
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Value {
     inner: Rc<RefCell<Inner>>,
 }
@@ -127,6 +129,15 @@ impl Value {
 
     pub fn data(&self) -> f64 {
         self.inner.borrow().data
+    }
+
+    pub fn grad(&self) -> f64 {
+        self.inner.borrow().grad
+    }
+
+    pub fn sub_assign(&self, v: f64) {
+        //println!("update value: {}", v);
+        self.inner.borrow_mut().data -= v
     }
 
     pub fn mul(&self, other: &Value) -> Value {
@@ -247,8 +258,40 @@ impl Value {
         }
     }
 
+    pub fn zero_grad(&self) {
+        self.inner.borrow_mut().grad = 0.0;
+    }
+
     pub fn backward(&self) {
-        self.inner.borrow_mut().backward_with_grad(1.0);
+        self.inner.borrow_mut().grad = 1.0;
+        let mut toppo = vec![];
+        let mut stack = vec![self.inner.clone()];
+        loop {
+            let inner = match stack.pop() {
+                Some(inner) => inner,
+                None => break,
+            };
+            {
+                let inner = inner.borrow();
+                match &inner.parent {
+                    Parent::None => {},
+                    Parent::BinOp { left, right, .. } => {
+                        stack.push(left.clone());
+                        stack.push(right.clone());
+                    },
+                    Parent::UnaryOp { inner, .. } => {
+                        stack.push(inner.clone());
+                    }
+                }
+            }
+            toppo.push(inner.clone());
+        }
+
+        log::info!("backward {} values", toppo.len());
+
+        for inner in toppo {
+            inner.borrow().backward();
+        }
     }
 }
 

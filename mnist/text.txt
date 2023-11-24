@@ -1,0 +1,449 @@
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/train-images-idx3-ubyte.gz already exists, skipping download
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/train-images-idx3-ubyte already exists, skipping decompression
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/train-labels-idx1-ubyte.gz already exists, skipping download
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/train-labels-idx1-ubyte already exists, skipping decompression
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/t10k-images-idx3-ubyte.gz already exists, skipping download
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/t10k-images-idx3-ubyte already exists, skipping decompression
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/t10k-labels-idx1-ubyte.gz already exists, skipping download
+2023-11-24T07:22:18.937Z INFO  [dataset::utility] ./datasets/t10k-labels-idx1-ubyte already exists, skipping decompression
+2023-11-24T07:22:18.949Z INFO  [mnist] parameter count: 2
+2023-11-24T07:22:18.950Z INFO  [microml::value] backward 54 values
+2023-11-24T07:22:18.950Z INFO  [mnist] loss: Value {
+    inner: RefCell {
+        value: Inner {
+            data: 49.82892142331043,
+            grad: 1.0,
+            parent: BinOp {
+                op: Mul,
+                left: RefCell {
+                    value: Inner {
+                        data: -49.82892142331043,
+                        grad: -1.0,
+                        parent: BinOp {
+                            op: Add,
+                            left: RefCell {
+                                value: Inner {
+                                    data: 0.0,
+                                    grad: -1.0,
+                                    parent: None,
+                                },
+                            },
+                            right: RefCell {
+                                value: Inner {
+                                    data: -49.82892142331043,
+                                    grad: -1.0,
+                                    parent: BinOp {
+                                        op: Mul,
+                                        left: RefCell {
+                                            value: Inner {
+                                                data: 1.0,
+                                                grad: 49.82892142331043,
+                                                parent: BinOp {
+                                                    op: Div,
+                                                    left: RefCell {
+                                                        value: Inner {
+                                                            data: 1.0,
+                                                            grad: 0.0,
+                                                            parent: UnaryOp {
+                                                                op: Exp,
+                                                                inner: RefCell {
+                                                                    value: Inner {
+                                                                        data: 0.0,
+                                                                        grad: 0.0,
+                                                                        parent: BinOp {
+                                                                            op: Add,
+                                                                            left: RefCell {
+                                                                                value: Inner {
+                                                                                    data: 0.0,
+                                                                                    grad: 0.0,
+                                                                                    parent: BinOp {
+                                                                                        op: Add,
+                                                                                        left: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: 0.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: BinOp {
+                                                                                                    op: Add,
+                                                                                                    left: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: None,
+                                                                                                        },
+                                                                                                    },
+                                                                                                    right: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: BinOp {
+                                                                                                                op: Mul,
+                                                                                                                left: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.7532773726818206,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: None,
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                right: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: None,
+                                                                                                                    },
+                                                                                                                },
+                                                                                                            },
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                        right: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: 0.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: None,
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                            right: RefCell {
+                                                                                value: Inner {
+                                                                                    data: -0.0,
+                                                                                    grad: 0.0,
+                                                                                    parent: BinOp {
+                                                                                        op: Mul,
+                                                                                        left: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: 0.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: BinOp {
+                                                                                                    op: Max,
+                                                                                                    left: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: None,
+                                                                                                        },
+                                                                                                    },
+                                                                                                    right: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: BinOp {
+                                                                                                                op: Add,
+                                                                                                                left: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: BinOp {
+                                                                                                                            op: Add,
+                                                                                                                            left: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.0,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: None,
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                            right: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.0,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: BinOp {
+                                                                                                                                        op: Mul,
+                                                                                                                                        left: RefCell {
+                                                                                                                                            value: Inner {
+                                                                                                                                                data: 0.7532773726818206,
+                                                                                                                                                grad: 0.0,
+                                                                                                                                                parent: None,
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                        right: RefCell {
+                                                                                                                                            value: Inner {
+                                                                                                                                                data: 0.0,
+                                                                                                                                                grad: 0.0,
+                                                                                                                                                parent: None,
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                    },
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                right: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: None,
+                                                                                                                    },
+                                                                                                                },
+                                                                                                            },
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                        right: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: -1.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: None,
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                    right: RefCell {
+                                                        value: Inner {
+                                                            data: 1.0,
+                                                            grad: -49.82892142331043,
+                                                            parent: BinOp {
+                                                                op: Add,
+                                                                left: RefCell {
+                                                                    value: Inner {
+                                                                        data: 0.0,
+                                                                        grad: -49.82892142331043,
+                                                                        parent: None,
+                                                                    },
+                                                                },
+                                                                right: RefCell {
+                                                                    value: Inner {
+                                                                        data: 1.0,
+                                                                        grad: 0.0,
+                                                                        parent: UnaryOp {
+                                                                            op: Exp,
+                                                                            inner: RefCell {
+                                                                                value: Inner {
+                                                                                    data: 0.0,
+                                                                                    grad: 0.0,
+                                                                                    parent: BinOp {
+                                                                                        op: Add,
+                                                                                        left: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: 0.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: BinOp {
+                                                                                                    op: Add,
+                                                                                                    left: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: BinOp {
+                                                                                                                op: Add,
+                                                                                                                left: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: None,
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                right: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: BinOp {
+                                                                                                                            op: Mul,
+                                                                                                                            left: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.7532773726818206,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: None,
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                            right: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.0,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: None,
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    },
+                                                                                                                },
+                                                                                                            },
+                                                                                                        },
+                                                                                                    },
+                                                                                                    right: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: None,
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                        right: RefCell {
+                                                                                            value: Inner {
+                                                                                                data: -0.0,
+                                                                                                grad: 0.0,
+                                                                                                parent: BinOp {
+                                                                                                    op: Mul,
+                                                                                                    left: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: 0.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: BinOp {
+                                                                                                                op: Max,
+                                                                                                                left: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: None,
+                                                                                                                    },
+                                                                                                                },
+                                                                                                                right: RefCell {
+                                                                                                                    value: Inner {
+                                                                                                                        data: 0.0,
+                                                                                                                        grad: 0.0,
+                                                                                                                        parent: BinOp {
+                                                                                                                            op: Add,
+                                                                                                                            left: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.0,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: BinOp {
+                                                                                                                                        op: Add,
+                                                                                                                                        left: RefCell {
+                                                                                                                                            value: Inner {
+                                                                                                                                                data: 0.0,
+                                                                                                                                                grad: 0.0,
+                                                                                                                                                parent: None,
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                        right: RefCell {
+                                                                                                                                            value: Inner {
+                                                                                                                                                data: 0.0,
+                                                                                                                                                grad: 0.0,
+                                                                                                                                                parent: BinOp {
+                                                                                                                                                    op: Mul,
+                                                                                                                                                    left: RefCell {
+                                                                                                                                                        value: Inner {
+                                                                                                                                                            data: 0.7532773726818206,
+                                                                                                                                                            grad: 0.0,
+                                                                                                                                                            parent: None,
+                                                                                                                                                        },
+                                                                                                                                                    },
+                                                                                                                                                    right: RefCell {
+                                                                                                                                                        value: Inner {
+                                                                                                                                                            data: 0.0,
+                                                                                                                                                            grad: 0.0,
+                                                                                                                                                            parent: None,
+                                                                                                                                                        },
+                                                                                                                                                    },
+                                                                                                                                                },
+                                                                                                                                            },
+                                                                                                                                        },
+                                                                                                                                    },
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                            right: RefCell {
+                                                                                                                                value: Inner {
+                                                                                                                                    data: 0.0,
+                                                                                                                                    grad: 0.0,
+                                                                                                                                    parent: None,
+                                                                                                                                },
+                                                                                                                            },
+                                                                                                                        },
+                                                                                                                    },
+                                                                                                                },
+                                                                                                            },
+                                                                                                        },
+                                                                                                    },
+                                                                                                    right: RefCell {
+                                                                                                        value: Inner {
+                                                                                                            data: -1.0,
+                                                                                                            grad: 0.0,
+                                                                                                            parent: None,
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                },
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        right: RefCell {
+                                            value: Inner {
+                                                data: -49.82892142331043,
+                                                grad: -1.0,
+                                                parent: UnaryOp {
+                                                    op: Log,
+                                                    inner: RefCell {
+                                                        value: Inner {
+                                                            data: 1e-15,
+                                                            grad: -999999999999999.9,
+                                                            parent: BinOp {
+                                                                op: Max,
+                                                                left: RefCell {
+                                                                    value: Inner {
+                                                                        data: 1e-15,
+                                                                        grad: 0.0,
+                                                                        parent: BinOp {
+                                                                            op: Max,
+                                                                            left: RefCell {
+                                                                                value: Inner {
+                                                                                    data: 0.0,
+                                                                                    grad: 0.0,
+                                                                                    parent: None,
+                                                                                },
+                                                                            },
+                                                                            right: RefCell {
+                                                                                value: Inner {
+                                                                                    data: 1e-15,
+                                                                                    grad: 0.0,
+                                                                                    parent: None,
+                                                                                },
+                                                                            },
+                                                                        },
+                                                                    },
+                                                                },
+                                                                right: RefCell {
+                                                                    value: Inner {
+                                                                        data: 0.999999999999999,
+                                                                        grad: -999999999999999.9,
+                                                                        parent: None,
+                                                                    },
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                right: RefCell {
+                    value: Inner {
+                        data: -1.0,
+                        grad: -49.82892142331043,
+                        parent: None,
+                    },
+                },
+            },
+        },
+    },
+}
+2023-11-24T07:22:18.951Z INFO  [mnist] loss grad: 1
+2023-11-24T07:22:18.951Z INFO  [mnist] out grad: 49.82892142331043
+2023-11-24T07:22:18.951Z INFO  [mnist] label: 5 loss: 49.82892142331043

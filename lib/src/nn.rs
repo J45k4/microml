@@ -34,7 +34,7 @@ impl Neuron {
             .map(|(w, i)| w.mul(i))
             .sum::<Value>()
             .add(&self.bias)
-            .relu()
+            // .relu()
     }
 }
 
@@ -93,5 +93,31 @@ impl MLP {
         }
 
         new_x
+    }
+
+    pub fn parameters(&self) -> Vec<&Value> {
+        let mut params = Vec::new();
+
+        for layer in self.layers.iter() {
+            for neuron in layer.neurons.iter() {
+                params.push(neuron.bias());
+                for weight in neuron.weights().iter() {
+                    params.push(weight);
+                }
+            }
+        }
+
+        params
+    }
+
+    pub fn zero_grad(&self) {
+        for layer in self.layers.iter() {
+            for neuron in layer.neurons.iter() {
+                neuron.bias().zero_grad();
+                for weight in neuron.weights().iter() {
+                    weight.zero_grad();
+                }
+            }
+        }
     }
 }
