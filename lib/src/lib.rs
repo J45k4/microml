@@ -3,6 +3,8 @@ mod nn;
 mod loss;
 mod value;
 
+use std::ops::Sub;
+
 pub use nn::*;
 pub use loss::*;
 use rand::Rng;
@@ -22,9 +24,9 @@ pub fn create_random_floats(n: usize) -> Vec<f64> {
 
 pub fn softmax(values: &[Value]) -> Vec<Value> {
     let max = values.iter().fold(Value::new(0.0), |a, b| a.max(b));
-    let exps = values.iter().map(|v| (v - &max).exp()).collect::<Vec<_>>();
+    let exps = values.iter().map(|v| v.sub(&max).exp()).collect::<Vec<_>>();
     let sum = exps.iter().sum::<Value>();
-    exps.iter().map(|v| v / &sum).collect::<Vec<Value>>()
+    exps.iter().map(|v| v.div(&sum)).collect::<Vec<Value>>()
 }
 
 pub fn one_hot_encode(label: usize, size: usize) -> Vec<Value> {
