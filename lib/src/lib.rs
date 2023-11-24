@@ -3,8 +3,6 @@ mod nn;
 mod loss;
 mod value;
 
-use std::ops::Sub;
-
 pub use nn::*;
 pub use loss::*;
 use rand::Rng;
