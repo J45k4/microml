@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 microml = { path = "../lib" }
 tokio = { version = "1", features = ["full"] }
-dataset = { git = "https://github.com/J45k4/dataset.git", rev = "d9635342e2e2dd05f7bd22c3d0f3792f97ccd9c8" }
+dataset = { git = "https://github.com/J45k4/dataset.git", rev = "554d8df95511a4b70af53c8b16a4ffabd4361184" }
 simple_logger = "4"
 log = "0.4"

@@ -125,7 +125,7 @@ impl Inner {
                         inner.grad += self.grad / inner.data;
                     },
                     UnaryOPType::Exp => {
-                        inner.grad += self.grad * self.data.exp();
+                        inner.grad += self.grad * inner.data.exp();
                     }
                 }
             },
@@ -321,8 +321,6 @@ impl Value {
 
             toppo.push(inner.clone());
         }
-
-        log::info!("backward {} values", toppo.len());
 
         for inner in toppo {
             inner.borrow().backward();

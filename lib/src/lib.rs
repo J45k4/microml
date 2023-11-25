@@ -3,6 +3,8 @@ mod nn;
 mod loss;
 mod value;
 
+use std::iter::zip;
+
 pub use nn::*;
 pub use loss::*;
 use rand::Rng;
@@ -31,4 +33,30 @@ pub fn one_hot_encode(label: usize, size: usize) -> Vec<Value> {
     let mut vec = vec![Value::new(0.0); size];
     vec[label] = Value::new(1.0);
     vec
+}
+
+pub fn get_predicted_label(softmax_output: &[Value]) -> usize {
+    let mut max_value = f64::MIN;
+    let mut max_index = 0;
+
+    for (index, value) in softmax_output.iter().enumerate() {
+        if value.data() > max_value {
+            max_value = value.data();
+            max_index = index;
+        }
+    }
+
+    max_index
+}
+
+pub fn calculate_accuracy(y: &[u32], y_hat: &[u32]) -> f64 {
+    let mut correct = 0;
+
+    for (y, y_hat) in zip(y, y_hat) {
+        if y == y_hat {
+            correct += 1;
+        }
+    }
+
+    correct as f64 / y.len() as f64
 }
