@@ -12,9 +12,11 @@ use microml::one_hot_encode;
 use microml::softmax;
 use plotters::prelude::*;
 use simple_logger::SimpleLogger;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
-fn plot_moons(data: &[Point], labels: &[i32]) -> anyhow::Result<()> {
-    let root = BitMapBackend::new("moons_plot.png", (640, 480)).into_drawing_area();
+fn plot_moons(data: &[Point], labels: &[i32], image_name: &str) -> anyhow::Result<()> {
+    let root = BitMapBackend::new(image_name, (640, 480)).into_drawing_area();
     root.fill(&WHITE)?;
 
     let mut chart = ChartBuilder::on(&root)
@@ -43,57 +45,37 @@ fn plot_moons(data: &[Point], labels: &[i32]) -> anyhow::Result<()> {
     Ok(())
 }
 
-// pub fn plot_predictions(points_by_label: HashMap<u32, Vec<(f64, f64)>>) {
-//     let mut fg = Figure::new();
-
-//     for (label, points) in points_by_label {
-//         let color = match label {
-//             0 => "blue",
-//             1 => "red",
-//             // Add more colors for more labels if necessary
-//             _ => "green",
-//         };
-
-//         fg.axes2d().points(
-//             points.iter().map(|(x, _)| *x),
-//             points.iter().map(|(_, y)| *y),
-//             &[Scatter::default().color(color).marker_size(1.0)],
-//         );
-//     }
-
-//     // Display or save the plot
-//     fg.show().unwrap(); // or fg.save("plot.png").unwrap();
-// }
-
 #[tokio::main]
 async fn main() {
     SimpleLogger::new().with_level(log::LevelFilter::Info).init().unwrap();
     
-    let train_dataset = generate_moons(2000, 0.1);
+    let train_dataset = generate_moons(3000, 0.1);
     log::info!("train_dataset: {:?}", train_dataset.labels.iter().take(10).collect::<Vec<_>>());
     let test_dataset = generate_moons(100, 0.01);
-    plot_moons(&train_dataset.points, &train_dataset.labels).unwrap();
+    plot_moons(&train_dataset.points, &train_dataset.labels, "mooons_train_set.png").unwrap();
 
-    let learning_rate = 0.01;
-    let lambda = 0.001;
-    let batch_size = 64; // Set your batch size
+    let learning_rate = 0.000001;
+    let lambda = 0.00001;
+    let batch_size = 32; // Set your batch size
+
+    let mut rng = thread_rng();
 
     let mlp = MLP::new(&[2, 50, 2]);
 
     let mut real_labels = Vec::new();
     let mut predicted_labels = Vec::new();
-    let train_bathes = zip(train_dataset.points, train_dataset.labels).collect::<Vec<_>>();
+    let mut train_bathes = zip(train_dataset.points, train_dataset.labels).collect::<Vec<_>>();
     let mut i = 0;
 
-    for epoch in 0..5 {
-        // Shuffle your dataset here (if possible)
+    for epoch in 0..7 {
+        train_bathes.shuffle(&mut rng);
 
         let mut total_loss = 0.0;
         let mut batch_count = 0;
 
         for batch in train_bathes.chunks(batch_size) {
             let mut batch_loss = 0.0;
-            let mut batch_gradients = Vec::new();
+            let mut total_grad = 0.0;
 
             for (point, label) in batch {
                 real_labels.push(*label as u32);
@@ -116,18 +98,18 @@ async fn main() {
 
                 i += 1;
 
-                // Store gradients for each parameter in batch_gradients
                 for p in mlp.parameters() {
-                    batch_gradients.push(p.grad() as f64);
+                    total_grad += p.grad();
                 }
 
                 mlp.zero_grad();
             }
 
-            // Update parameters based on average gradients in the batch
-            for (p, grad) in zip(mlp.parameters(), batch_gradients.iter()) {
-                let l2_penalty = lambda * p.data(); // L2 penalty term
-                p.sub_assign((*grad / batch_size as f64 + l2_penalty) * learning_rate);
+            let avg_grad = total_grad / batch_size as f64 * learning_rate;
+
+            for p in mlp.parameters() {
+                //let l2_penalty = lambda * p.data(); // L2 penalty term
+                p.sub_assign(avg_grad);
             }
 
             total_loss += batch_loss;
@@ -135,8 +117,6 @@ async fn main() {
         }
 
         let average_loss = total_loss / batch_count as f64;
-        // Calculate accuracy and other metrics here
-
         let accuracy = calculate_accuracy(&real_labels, &predicted_labels);
         real_labels.clear();
         predicted_labels.clear();
@@ -159,5 +139,5 @@ async fn main() {
         log::info!("test loss: {} out: {:.4?} label: {:.4?} hot_label: {:.4?} predicted_label: {:?}", loss.data(), out, label, label_hot, predicted_label);
     }
 
-    plot_moons(&test_dataset.points, &predictions).unwrap();
+    plot_moons(&test_dataset.points, &predictions, "moons_predictions.png").unwrap();
 }

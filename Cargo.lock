@@ -864,6 +864,7 @@ dependencies = [
  "log",
  "microml",
  "plotters",
+ "rand",
  "simple_logger",
  "tokio",
 ]
