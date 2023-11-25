@@ -2,6 +2,7 @@ use std::iter::zip;
 
 use crate::Value;
 use crate::create_random_floats;
+use crate::he_initialization;
 
 #[derive(Debug)]
 pub struct Neuron {
@@ -12,7 +13,13 @@ pub struct Neuron {
 
 impl Neuron {
     pub fn new(input_size: usize, nonlin: bool) -> Neuron {
-        let weights = create_random_floats(input_size).iter().map(|x| Value::new(*x)).collect::<Vec<Value>>();
+        let weights = if nonlin {
+            he_initialization(input_size, input_size)
+                .iter().map(|&x| Value::new(x)).collect()
+        } else {
+            // Use another initialization method if non-linear is false
+            create_random_floats(input_size).iter().map(|&x| Value::new(x)).collect()
+        };
         let bias = Value::new(0.0);
 
         Neuron {

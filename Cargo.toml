@@ -2,5 +2,6 @@
 
 members = [
     "lib",
-    "mnist"
+    "mnist",
+    "moons"
 ]

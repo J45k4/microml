@@ -8,6 +8,7 @@ use std::iter::zip;
 pub use nn::*;
 pub use loss::*;
 use rand::Rng;
+use rand::distributions::Uniform;
 pub use value::*;
 
 pub fn create_random_floats(n: usize) -> Vec<f64> {
@@ -59,4 +60,12 @@ pub fn calculate_accuracy(y: &[u32], y_hat: &[u32]) -> f64 {
     }
 
     correct as f64 / y.len() as f64
+}
+
+pub fn he_initialization(size: usize, fan_in: usize) -> Vec<f64> {
+    let std_dev = (2.0 / fan_in as f64).sqrt();
+    let normal = Uniform::new(-std_dev, std_dev);
+    let mut rng = rand::thread_rng();
+
+    (0..size).map(|_| rng.sample(&normal)).collect()
 }

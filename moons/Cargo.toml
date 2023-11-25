@@ -1,5 +1,5 @@
 [package]
-name = "mnist"
+name = "moons"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 microml = { path = "../lib" }
 tokio = { version = "1", features = ["full"] }
-dataset = { git = "https://github.com/J45k4/dataset.git", rev = "7109bd8118ccf54132e8add1fa6e210b11fbd969" }
+dataset = { git = "https://github.com/J45k4/dataset.git", rev = "7c4246a4e947b06eabeb53e85f273a5cae958adc" }
 simple_logger = "4"
 log = "0.4"
+plotters = "0.3"
+anyhow = "1"
