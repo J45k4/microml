@@ -17,7 +17,6 @@ impl Neuron {
             he_initialization(input_size, input_size)
                 .iter().map(|&x| Value::new(x)).collect()
         } else {
-            // Use another initialization method if non-linear is false
             create_random_floats(input_size).iter().map(|&x| Value::new(x)).collect()
         };
         let bias = Value::new(0.0);

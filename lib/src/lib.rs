@@ -16,7 +16,7 @@ pub fn create_random_floats(n: usize) -> Vec<f64> {
     let mut floats = Vec::with_capacity(n);
 
     for _ in 0..n {
-        let random_float: f64 = rng.gen(); // Generate a random f64.
+        let random_float: f64 = rng.gen();
         floats.push(random_float);
     }
 
